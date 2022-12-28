@@ -21,11 +21,13 @@ const DisplayCampaigns = ({ title, isLoading, campaigns }) => {
 
       <div className="flex flex-wrap mt-[20px] gap-[26px]">
         {isLoading && (
-          <img
-            src={loader}
-            alt="loader"
-            className="w-[100px] h-[100px] object-contain"
-          />
+          <div className="absolute inset-0 z-10 h-full flex flex-col items-center justify-center">
+            <img
+              src={loader}
+              alt="loader"
+              className="w-[100px] h-[100px] object-contain"
+            />
+          </div>
         )}
 
         {!isLoading && campaigns.length === 0 && (
