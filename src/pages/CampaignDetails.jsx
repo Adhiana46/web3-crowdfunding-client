@@ -9,33 +9,41 @@ import { thirdweb } from "../assets";
 
 const CampaignDetails = () => {
   const { state } = useLocation();
-  const { getDonations, donate, contract, address } = useStateContext();
+  const { getCampaign, getDonations, donate, contract, address, connect } =
+    useStateContext();
   useStateContext();
 
   const [isLoading, setIsLoading] = useState(false);
   const [amount, setAmount] = useState("");
+  const [campaign, setCampaign] = useState(state);
   const [donators, setDonators] = useState([]);
 
-  const remainingDays = daysLeft(state.deadline);
+  const remainingDays = daysLeft(campaign.deadline);
 
   const fetchDonators = async () => {
-    const data = await getDonations(state.pid);
+    const data = await getDonations(campaign.pid);
 
     setDonators(data);
   };
 
+  const fetchCampaign = async (pid) => {
+    const data = await getCampaign(pid);
+
+    setCampaign(data);
+  };
+
   useEffect(() => {
     if (contract) fetchDonators();
-  }, [contract, address]);
+  }, [contract, address, campaign]);
 
   const handleDonate = async () => {
     setIsLoading(true);
 
-    await donate(state.pid, amount);
+    await donate(campaign.pid, amount);
 
     setIsLoading(false);
 
-    // TODO: refetch
+    fetchCampaign(state.pid);
   };
 
   return (
@@ -44,7 +52,7 @@ const CampaignDetails = () => {
       <div className="w-full flex md:flex-row flex-col mt-10 gap-[30px]">
         <div className="flex-1 flex-col">
           <img
-            src={state.image}
+            src={campaign.image}
             alt="campaign"
             className="w-full h-[410px] object-cover rounded-xl"
           />
@@ -53,8 +61,8 @@ const CampaignDetails = () => {
               className="absolute h-full bg-[#4acd8d]"
               style={{
                 width: `${calculateBarPercentage(
-                  state.target,
-                  state.amountCollected
+                  campaign.target,
+                  campaign.amountCollected
                 )}%`,
                 maxWidth: "100%",
               }}
@@ -64,8 +72,8 @@ const CampaignDetails = () => {
         <div className="flex md:w-[150px] w-full flex-wrap justify-between gap-[30px]">
           <CountBox title="Days Left" value={remainingDays} />
           <CountBox
-            title={`Raised of ${state.target}`}
-            value={state.amountCollected}
+            title={`Raised of ${campaign.target}`}
+            value={campaign.amountCollected}
           />
           <CountBox title="Total Backers" value={donators.length} />
         </div>
@@ -86,7 +94,7 @@ const CampaignDetails = () => {
               </div>
               <div>
                 <h4 className="font-epilogue font-semibold text-[14px] text-white break-all">
-                  {state.owner}
+                  {campaign.owner}
                 </h4>
                 <p className="mt-[4px] font-epilogue font-normal text-[12px] text-[#808191]">
                   10 Campaigns
@@ -101,7 +109,7 @@ const CampaignDetails = () => {
             </h4>
             <div className="mt-[20px]">
               <p className="font-epilogue font-normal text-[16px] text-[#808191] leading-[26px]">
-                {state.description}
+                {campaign.description}
               </p>
             </div>
           </div>
@@ -159,12 +167,21 @@ const CampaignDetails = () => {
                 </p>
               </div>
 
-              <CustomButton
-                btnType="button"
-                title="Fund Campaign"
-                styles="w-full bg-[#8c6dfd]"
-                handleClick={handleDonate}
-              />
+              {address ? (
+                <CustomButton
+                  btnType="button"
+                  title="Fund Campaign"
+                  styles="w-full bg-[#8c6dfd]"
+                  handleClick={handleDonate}
+                />
+              ) : (
+                <CustomButton
+                  btnType="button"
+                  title="Connect"
+                  styles="w-full bg-[#8c6dfd]"
+                  handleClick={() => connect()}
+                />
+              )}
             </div>
           </div>
         </div>
